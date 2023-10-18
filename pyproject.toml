@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "drf-project"
+version = "0.1.0"
+description = ""
+authors = ["korchaginks <kkonstantinserg@gmail.com>"]
+readme = "README.md"
+packages = [{include = "drf_project"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.2.6"
+pillow = "^10.1.0"
+djangorestframework = "^3.14.0"
+python-dotenv = "^1.0.0"
+psycopg2 = "^2.9.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
