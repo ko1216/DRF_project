@@ -11,17 +11,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         users = {
-            'superuser': {
-                'email': 'admin@admin.com',
-                'first_name': 'admin',
-                'last_name': 'django',
-                'is_staff': True,
-                'is_superuser': True
-            },
-            1: {
-                'email': 'user1@admin.com',
-                'first_name': 'user',
-                'last_name': '1',
+            # 'superuser': {
+            #     'email': 'admin@admin.com',
+            #     'first_name': 'admin',
+            #     'last_name': 'django',
+            #     'is_staff': True,
+            #     'is_superuser': True
+            # },
+            # 1: {
+            #     'email': 'user1@admin.com',
+            #     'first_name': 'user',
+            #     'last_name': '1',
+            #     'is_staff': False,
+            #     'is_superuser': False
+            # },
+            3: {
+                'email': 'user2@admin.com',
+                'first_name': 'user2',
+                'last_name': '2',
                 'is_staff': False,
                 'is_superuser': False
             }

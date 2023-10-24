@@ -37,7 +37,7 @@ class Lesson(models.Model):
 class Payments(models.Model):
     #  Я установил для всех FK полей SET_NULL, чтобы логи оплат не удалялись в случае удаления пользователя/курсов,
     #  так записи в этой таблице влияют на аналитические метрики
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, default=None, verbose_name='Пользователь', related_name='payments')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, default=None, verbose_name='Пользователь')
 
     date = models.DateTimeField(auto_now_add=True, verbose_name='Дата оплаты')
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, default=None, verbose_name='Курс', **NULLABLE)
