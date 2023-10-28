@@ -9,6 +9,7 @@ class Course(models.Model):
     title = models.CharField(max_length=250, verbose_name='Название курса')
     preview = models.ImageField(verbose_name='Картинка', **NULLABLE)
     description = models.TextField(verbose_name='Описание')
+    monthly_price = models.SmallIntegerField(default=1000, verbose_name='Стоимость месячной подписки', **NULLABLE)
 
     def __str__(self):
         return self.title
@@ -34,6 +35,19 @@ class Lesson(models.Model):
         verbose_name_plural = 'Уроки'
 
 
+class Subscription(models.Model):
+    is_active = models.BooleanField(default=False, verbose_name='Активно')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='Курс', related_name='subscription')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', **NULLABLE)
+
+    def __str__(self):
+        return f'Подписка {self.user} на курс: {self.course}'
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+
 class Payments(models.Model):
     #  Я установил для всех FK полей SET_NULL, чтобы логи оплат не удалялись в случае удаления пользователя/курсов,
     #  так записи в этой таблице влияют на аналитические метрики
@@ -42,6 +56,7 @@ class Payments(models.Model):
     date = models.DateTimeField(auto_now_add=True, verbose_name='Дата оплаты')
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, default=None, verbose_name='Курс', **NULLABLE)
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, default=None, verbose_name='Урок', **NULLABLE)
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, default=None, verbose_name='Подписка', **NULLABLE)
     amount = models.IntegerField(verbose_name='Сумма оплаты')
     payment_method = models.CharField(max_length=50, verbose_name='Способ оплаты')
 
