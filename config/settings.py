@@ -19,6 +19,7 @@ load_dotenv()
 db_password: str = os.getenv('PSQL_PASSWORD')
 db_username: str = os.getenv('DB_USERNAME')
 db_name: str = os.getenv('DB_NAME')
+STRIPE_SECRET_KEY: str = os.getenv('STRIPE_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,7 +50,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
-    
+    'drf_yasg',
+       
     'users',
     'main',
 ]

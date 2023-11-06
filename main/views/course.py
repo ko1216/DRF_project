@@ -1,13 +1,19 @@
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from main.models import Course, Subscription
+from main.models import Course, Subscription, Payments
 from main.pagination import SubjectsPagination
 from main.permissions import IsModerator, IsCourseOrLessonOwner, IsNotModerator
 from main.serializers.course import CourseSerializer
 from users.models import UserRoles
+from django.conf import settings
+
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class CourseViewSet(ModelViewSet):
@@ -38,7 +44,7 @@ class CourseViewSet(ModelViewSet):
         return Course.objects.none()
 
     def list(self, request, *args, **kwargs):
-        user = request.user
+        user = self.request.user
         courses = Course.objects.all()
 
         for course in courses:
@@ -53,3 +59,48 @@ class CourseViewSet(ModelViewSet):
         paginated_queryset = self.paginate_queryset(queryset)
         serializer = CourseSerializer(paginated_queryset, many=True)
         return self.get_paginated_response(serializer.data)
+
+
+class CoursePayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, course_id):
+        course = Course.objects.get(pk=course_id)
+        user = self.request.user
+        amount = course.price_rub
+
+        try:
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'rub',
+                            'product_data': {
+                                'name': course.title,
+                            },
+                            'unit_amount': amount,
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                mode='payment',
+                success_url='https://example.com/success/',
+                cancel_url='https://example.com/cancel/',
+            )
+
+            payment = Payments.objects.create(
+                user=user,
+                course=course,
+                amount=amount,
+            )
+            payment.card_number = request.data.get('card_number')
+            payment.expiration_date = request.data.get('expiration_date')
+            payment.cvc = request.data.get('cvc')
+            payment.payment_id = session.id
+            payment.save()
+
+            return Response({'sessionID': session.id, 'stripeCheckoutURL': session.url})
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

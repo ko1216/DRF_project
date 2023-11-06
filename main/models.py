@@ -9,7 +9,8 @@ class Course(models.Model):
     title = models.CharField(max_length=250, verbose_name='Название курса')
     preview = models.ImageField(verbose_name='Картинка', **NULLABLE)
     description = models.TextField(verbose_name='Описание')
-    monthly_price = models.SmallIntegerField(default=1000, verbose_name='Стоимость месячной подписки', **NULLABLE)
+    monthly_price_rub = models.IntegerField(default=100000, verbose_name='Стоимость месячной подписки', **NULLABLE)
+    price_rub = models.IntegerField(default=200000, verbose_name='Стоимость оплаты в рублях', **NULLABLE)
 
     def __str__(self):
         return self.title
@@ -48,6 +49,11 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
 
 
+class PaymentMethod(models.TextChoices):
+    cash = 'наличными'
+    card = 'по карте'
+
+
 class Payments(models.Model):
     #  Я установил для всех FK полей SET_NULL, чтобы логи оплат не удалялись в случае удаления пользователя/курсов,
     #  так записи в этой таблице влияют на аналитические метрики
@@ -58,7 +64,12 @@ class Payments(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, default=None, verbose_name='Урок', **NULLABLE)
     subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, default=None, verbose_name='Подписка', **NULLABLE)
     amount = models.IntegerField(verbose_name='Сумма оплаты')
-    payment_method = models.CharField(max_length=50, verbose_name='Способ оплаты')
+    payment_method = models.CharField(max_length=9, choices=PaymentMethod.choices, default=PaymentMethod.card, verbose_name='Способ оплаты')
+
+    card_number = models.CharField(max_length=16, verbose_name='Номер карты', **NULLABLE)
+    expiration_date = models.CharField(max_length=7, verbose_name='Дата окончания срока действия карты', **NULLABLE)
+    cvc = models.CharField(max_length=3, verbose_name='CVC-код', **NULLABLE)
+    payment_id = models.CharField(max_length=100, verbose_name='ID платежа', **NULLABLE)
 
     def __str__(self):
         if self.course:
