@@ -54,7 +54,7 @@ class CourseViewSet(ModelViewSet):
         serializer = CourseSerializer(courses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def get(self, request, *args, **kwargs):
+    def get(self):
         queryset = Course.objects.all()
         paginated_queryset = self.paginate_queryset(queryset)
         serializer = CourseSerializer(paginated_queryset, many=True)
@@ -97,7 +97,6 @@ class CoursePayView(APIView):
             payment.card_number = request.data.get('card_number')
             payment.expiration_date = request.data.get('expiration_date')
             payment.cvc = request.data.get('cvc')
-            payment.payment_id = session.id
             payment.save()
 
             return Response({'sessionID': session.id, 'stripeCheckoutURL': session.url})
