@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -8,6 +10,7 @@ from main.models import Course, Subscription, Payments
 from main.pagination import SubjectsPagination
 from main.permissions import IsModerator, IsCourseOrLessonOwner, IsNotModerator
 from main.serializers.course import CourseSerializer
+from main.tasks import send_email
 from users.models import UserRoles
 from django.conf import settings
 
@@ -59,6 +62,14 @@ class CourseViewSet(ModelViewSet):
         paginated_queryset = self.paginate_queryset(queryset)
         serializer = CourseSerializer(paginated_queryset, many=True)
         return self.get_paginated_response(serializer.data)
+
+    def perform_create(self, serializer):
+        instance = serializer.save(last_updated=datetime.now())
+        send_email(instance.id)
+
+    def perform_update(self, serializer):
+        instance = serializer.save(last_updated=datetime.now())
+        send_email(instance.id)
 
 
 class CoursePayView(APIView):
