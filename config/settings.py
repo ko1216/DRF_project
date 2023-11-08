@@ -20,6 +20,10 @@ db_password: str = os.getenv('PSQL_PASSWORD')
 db_username: str = os.getenv('DB_USERNAME')
 db_name: str = os.getenv('DB_NAME')
 STRIPE_SECRET_KEY: str = os.getenv('STRIPE_KEY')
+r_location: str = os.getenv('REDIS_LOCATION')
+gmail_login: str = os.getenv('GMAIL_LOGIN')
+gmail_pass: str = os.getenv('GMAIL_PASSWORD')
+smtp_host: str = os.getenv('SMTP_HOST')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,6 +55,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     'drf_yasg',
+    'django_celery_beat',
        
     'users',
     'main',
@@ -156,3 +161,22 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
+
+# Настройки CELERY
+CELERY_BROKER_URL = r_location
+CELERY_RESULT_BACKEND = r_location
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = smtp_host
+EMAIL_USE_SSL = True
+EMAIL_PORT = 465
+EMAIL_HOST_USER = gmail_login
+EMAIL_HOST_PASSWORD = gmail_pass
