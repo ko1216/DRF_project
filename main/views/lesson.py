@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -6,6 +8,7 @@ from main.pagination import SubjectsPagination
 from main.permissions import IsModerator, IsCourseOrLessonOwner, IsNotModerator
 from main.serializers.lesson import LessonSerializer
 from users.models import UserRoles
+from main.tasks import send_email
 
 
 class LessonRetrieveAPIView(RetrieveAPIView):
@@ -41,11 +44,29 @@ class LessonCreateAPIView(CreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, IsNotModerator]
 
+    def perform_create(self, serializer):
+        instance = serializer.save(last_updated=datetime.now())
+
+        course = instance.course
+        if course:
+            course.last_updated = datetime.now()
+            course.save()
+            send_email(course.id)
+
 
 class LessonUpdateAPIView(UpdateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsModerator | IsCourseOrLessonOwner, IsAuthenticated]
+
+    def perform_update(self, serializer):
+        instance = serializer.save(last_updated=datetime.now())
+
+        course = instance.course
+        if course:
+            course.last_updated = datetime.now()
+            course.save()
+            send_email(course.id)
 
 
 class LessonDestroyAPIView(DestroyAPIView):
