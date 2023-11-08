@@ -11,6 +11,7 @@ class Course(models.Model):
     description = models.TextField(verbose_name='Описание')
     monthly_price_rub = models.IntegerField(default=100000, verbose_name='Стоимость месячной подписки', **NULLABLE)
     price_rub = models.IntegerField(default=200000, verbose_name='Стоимость оплаты в рублях', **NULLABLE)
+    last_updated = models.DateTimeField(verbose_name='Послдеднее обновление', **NULLABLE)
 
     def __str__(self):
         return self.title
@@ -25,6 +26,7 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='Описание')
     preview = models.ImageField(verbose_name='Картинка', **NULLABLE)
     video_link = models.URLField(verbose_name='Ссылка на урок')
+    last_updated = models.DateTimeField(verbose_name='Послдеднее обновление', **NULLABLE)
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE, **NULLABLE, related_name='lessons', verbose_name='Курс')
 
