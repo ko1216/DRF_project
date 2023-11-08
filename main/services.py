@@ -1,35 +1,18 @@
-import stripe
-from django.conf import settings
-from rest_framework import status
-from rest_framework.response import Response
+import json
+from datetime import datetime
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
 
-def create_payment_intent(price: int, currency: str = 'rub'):
-    try:
-        payment_intent = stripe.PaymentIntent.create(
-            amount=price,
-            currency=currency,
-            description='Оплата курса',
-            payment_method_types=['card'],
-        )
-        return str(payment_intent.id)
-    except stripe.error.StripeError as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+def set_schedule(*args, **kwargs):
+    schedule, created = IntervalSchedule.objects.get_or_create(
+        every=5,
+        period=IntervalSchedule.SECONDS,
+    )
 
-
-def get_payment_intent_status(payment_intent_id):
-    try:
-        payment = stripe.PaymentIntent.retrieve(payment_intent_id)
-
-        response = {
-            'status': payment.status,
-            'amount': payment.amount,
-            'currency': payment.currency,
-            'transfer_data': payment.transfer_data
-        }
-
-        return Response(response, status=status.HTTP_200_OK)
-    except stripe.error.StripeError as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    PeriodicTask.objects.create(
+        interval=schedule,
+        name='Ban user if inactive for 28 days',
+        task='main.tasks.check_users_last_login',
+        args=json.dumps([]),
+    )
