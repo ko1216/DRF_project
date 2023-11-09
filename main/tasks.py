@@ -29,10 +29,10 @@ def send_email(course_id):
     print('письмо отправлено')
 
 
+@shared_task
 def check_users_last_login():
     users = User.objects.all()
     current_time = datetime.datetime.now()
-    print(f'Задача исполняется, время {current_time}')
 
     for user in users:
         delta = (current_time - user.last_login).total_seconds()
